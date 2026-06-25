@@ -54,6 +54,16 @@ This project provides a fraud detection pipeline that:
   - `alert_threshold` (default `0.8`)
 - Returns recent prediction events with alert flags, status, latency, and error details.
 
+### Alert Logic
+
+An event is marked as an alert when all of the following are true:
+- Request status is `success`
+- Either `prediction = 1` or `fraud_probability >= alert_threshold`
+
+This same rule is used for:
+- `alert_count` in `/monitoring/summary`
+- `is_alert` for each item in `/monitoring/events`
+
 ## Installation
 
 **Requirements**: Python 3.8+
@@ -74,17 +84,86 @@ python app.py
 ```
 API accessible at `http://127.0.0.1:5000`
 
-### Streamlit Dashboard (Prediction + Real-Time Monitoring)
+### Streamlit Dashboard (Prediction + Monitoring)
 ```bash
 streamlit run streamlit_app.py
 ```
 
-The Streamlit app now includes:
-- Manual prediction interface
-- Live monitoring metrics (requests, fraud flags, alerts, errors)
-- Recent alerts table
-- Recent event feed with latency and error tracking
-- Configurable alert threshold and auto-refresh
+### Separate Model Comparison Dashboard (Notebook Reference)
+
+A dedicated dashboard for graphs, charts, and side-by-side comparison of the three tuned models is available in `Dashboard/`.
+
+Run from project root:
+
+```bash
+streamlit run Dashboard/model_comparison_dashboard.py
+```
+
+This dashboard compares:
+- Logistic Regression (`Model_DIR/best_logistic_regression_rs_model.joblib`)
+- Neural Network (`Model_DIR/best_nn_model.joblib`)
+- XGBoost (`Model_DIR/best_xgboost_model.joblib`)
+
+For details, see `Dashboard/README.md`.
+
+The Streamlit app has two separate sections (selected from sidebar `Dashboard Section`):
+
+1. **Prediction Input**
+- Manual transaction input (`Time`, `V1`-`V28`, `Amount`)
+- Prediction result (`Fraudulent` or `Legitimate`)
+- Fraud probability display
+- Processed feature preview sent to model
+
+2. **Monitoring & Alerts**
+- Monitoring settings: API URL, summary window, recent event limit, alert threshold
+- Optional auto-refresh controls (`Auto-refresh dashboard`, `Refresh every`)
+- Summary metric cards:
+  - `Requests`: total monitored requests in selected window
+  - `Fraud Flags`: successful predictions where `prediction = 1`
+  - `Alerts`: events that satisfy alert logic
+  - `Errors`: failed prediction requests
+- Performance cards:
+  - `Avg Fraud Probability`
+  - `Avg Latency (ms)`
+- `Recent Alerts` table: only rows with `is_alert = true`
+- `Recent Events` table: full event feed including `status`, `error_message`, and `is_alert`
+
+Separating these sections prevents fast monitoring refresh from interrupting user input while entering transaction details.
+
+#### Quick Tour (First-Time Users)
+
+Use this short flow to explore the app end-to-end:
+
+1. Start the API:
+  ```bash
+  python app.py
+  ```
+2. Start Streamlit in another terminal:
+  ```bash
+  streamlit run streamlit_app.py
+  ```
+3. Open the Streamlit URL (usually `http://127.0.0.1:8501`).
+4. In sidebar `Dashboard Section`, select **Prediction Input**.
+5. Enter sample transaction values and click **Predict**.
+6. Review:
+  - Classification result (`Fraudulent` or `Legitimate`)
+  - Fraud probability score
+  - Processed feature table
+7. Switch sidebar `Dashboard Section` to **Monitoring & Alerts**.
+8. Set:
+  - `Summary Window (minutes)`
+  - `Alert Threshold (Fraud Probability)`
+  - `Recent Events`
+9. Observe dashboard blocks:
+  - Top metrics (`Requests`, `Fraud Flags`, `Alerts`, `Errors`)
+  - Performance (`Avg Fraud Probability`, `Avg Latency (ms)`)
+  - `Recent Alerts` table
+  - `Recent Events` table
+10. Turn on `Auto-refresh dashboard` only when actively monitoring live traffic.
+
+Recommended screenshots for documentation:
+- Prediction Input view with filled transaction fields and prediction result
+- Monitoring & Alerts view showing metric cards and at least one alert row
 
 **Production** (Using Gunicorn):
 ```bash
@@ -175,5 +254,4 @@ curl -X POST http://127.0.0.1:5000/predict \
 - Add model explainability (SHAP, LIME) for fraud investigation support
 - Implement comprehensive input validation and error handling
 - Add batch prediction endpoint for bulk transaction processing
-- Integrate real-time monitoring and alerting dashboard
 - Implement model versioning and A/B testing framework
