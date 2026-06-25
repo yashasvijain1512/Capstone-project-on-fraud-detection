@@ -1,154 +1,172 @@
-import io
-import os
-from typing import List
-
-import numpy as np
 import streamlit as st
-import tensorflow as tf
-from PIL import Image
-
-APP_MODEL_DIR = os.environ.get('MODEL_DIR', 'models')
-IMG_SIZE = int(os.environ.get('IMG_SIZE', 224))
-TOP_K_DEFAULT = int(os.environ.get('TOP_K', 3))
+import joblib
+import pandas as pd
+import numpy as np
 
 
-def list_model_options(model_dir: str):
-    options = []
-    if os.path.isdir(os.path.join(model_dir, 'saved_model')):
-        options.append(('SavedModel directory', model_dir))
+# --- Configuration --- #
+MODEL_PATH = 'final_model.joblib'
+SCALER_PATH = 'scaler_for_api.joblib'
 
-    for entry in sorted(os.listdir(model_dir)):
-        entry_path = os.path.join(model_dir, entry)
-        if os.path.isfile(entry_path) and entry_path.endswith('.h5'):
-            options.append((entry, entry_path))
-        elif os.path.isdir(entry_path):
-            nested = os.path.join(entry_path, 'saved_model')
-            if os.path.isdir(nested):
-                options.append((f'{entry}/saved_model', entry_path))
-    return options
-
-
-def _find_class_names(model_path: str):
-    model_dir = os.path.dirname(model_path) if os.path.isfile(model_path) else model_path
-    candidates = []
-
-    if os.path.isfile(model_path):
-        base_name = os.path.splitext(os.path.basename(model_path))[0]
-        candidates.extend([
-            os.path.join(model_dir, f'{base_name}_class_names.txt'),
-            os.path.join(model_dir, f'{base_name}_best_class_names.txt'),
-            os.path.join(model_dir, f'{base_name}_final_class_names.txt'),
-        ])
-
-    candidates.append(os.path.join(model_dir, 'class_names.txt'))
-
-    for path in candidates:
-        if os.path.exists(path):
-            return path
-    return None
-
-
-@st.cache_resource(show_spinner=False)
-def load_model_and_labels(model_path: str):
-    """Load a TensorFlow SavedModel or .h5 and class names from disk."""
-    if os.path.isdir(model_path):
-        saved_model_path = os.path.join(model_path, 'saved_model')
-        if not os.path.isdir(saved_model_path):
-            raise FileNotFoundError(f'No SavedModel directory found in {model_path}')
-        model = tf.keras.models.load_model(saved_model_path)
-    elif os.path.isfile(model_path) and model_path.endswith('.h5'):
-        model = tf.keras.models.load_model(model_path)
-    else:
-        raise FileNotFoundError(f'No loadable model found at {model_path}')
-
-    class_file = _find_class_names(model_path)
-    if class_file is not None:
-        with open(class_file, 'r', encoding='utf-8') as f:
-            class_names = [line.strip() for line in f if line.strip()]
-    else:
-        output_shape = model.output_shape
-        class_count = int(output_shape[-1])
-        class_names = [f'class_{i}' for i in range(class_count)]
-
-    return model, class_names
-
-
-def preprocess_imagefile(file_bytes: bytes, img_size: int) -> np.ndarray:
-    image = Image.open(io.BytesIO(file_bytes)).convert('RGB')
-    image = image.resize((img_size, img_size))
-    arr = np.array(image).astype('float32') / 255.0
-    return np.expand_dims(arr, axis=0)
-
-
-def top_k_predictions(preds: np.ndarray, class_names: List[str], k: int) -> List[dict]:
-    probs = preds[0]
-    k = min(k, probs.shape[-1])
-    top_idx = probs.argsort()[-k:][::-1]
-    return [
-        {
-            'label': class_names[i] if i < len(class_names) else f'class_{i}',
-            'index': int(i),
-            'score': float(probs[i]),
-        }
-        for i in top_idx
-    ]
-
-
-def main():
-    st.set_page_config(page_title='Food Image Classification', layout='centered')
-    st.title('Food Image Classification')
-    st.write('Upload a food image and get top model predictions.')
-
-    st.sidebar.header('Settings')
-    top_k = st.sidebar.slider('Top K predictions', 1, 5, TOP_K_DEFAULT)
-    img_size = st.sidebar.select_slider('Image size', options=[128, 160, 224, 256], value=IMG_SIZE)
-
-    model_options = list_model_options(APP_MODEL_DIR)
-    if not model_options:
-        st.error(f'No models found in `{APP_MODEL_DIR}`. Place a SavedModel or .h5 file there.')
-        return
-
-    model_choice = st.sidebar.selectbox(
-        'Select model',
-        [label for label, _ in model_options],
-        index=0,
-    )
-    selected_path = dict(model_options)[model_choice]
-
-    st.sidebar.write(f'Model path: `{selected_path}`')
-
+# --- Load Model and Scaler --- #
+@st.cache_resource # Cache the model and scaler to avoid reloading on every rerun
+def load_model_and_scaler():
     try:
-        model, class_names = load_model_and_labels(selected_path)
-    except Exception as exc:
-        st.error(f'Unable to load model: {exc}')
-        return
+        model = joblib.load(MODEL_PATH)
+        scaler = joblib.load(SCALER_PATH)
+        return model, scaler
+    except FileNotFoundError as e:
+        st.error(f"Error loading model or scaler: {e}. Please ensure '{MODEL_PATH}' and '{SCALER_PATH}' are in the correct directory.")
+        st.stop() # Stop the app if files are not found
 
-    uploaded_file = st.file_uploader('Choose an image', type=['jpg', 'jpeg', 'png'])
-    if uploaded_file is None:
-        st.info('Upload an image to classify it.')
-        return
+model, scaler = load_model_and_scaler()
 
-    image_bytes = uploaded_file.read()
+# --- Streamlit UI --- #
+st.title('Fraud Detection App')
+st.write('Enter transaction details to predict if it is fraudulent or not.')
+
+# Input fields for transaction features
+st.sidebar.header('Transaction Features')
+
+# For simplicity, we'll create input fields for 'Time', 'Amount', and a few 'V' features.
+# In a full application, you might provide all 28 V features or a subset.
+# The order of features is crucial, ensure it matches your training data.
+
+time = st.sidebar.number_input('Time (seconds since first transaction)', min_value=0.0, value=10000.0, step=1.0)
+amount = st.sidebar.number_input('Amount', min_value=0.0, value=50.0, step=0.01)
+
+st.sidebar.subheader('V-Features (Sample)')
+# These are just example V-features. In a real app, you'd list all 28.
+# The actual range and distribution of these features are important.
+# For now, using generic sliders or number inputs.
+
+v_features = {}
+for i in range(1, 29): # V1 to V28
+    # Using a placeholder range for demo. Adjust min/max based on actual data distribution.
+    # Example: V1 input, adjust default and range as needed.
+    if i in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]: # Ensure we only create the relevant ones
+        v_features[f'V{i}'] = st.sidebar.slider(f'V{i}', min_value=-50.0, max_value=50.0, value=0.0, step=0.1)
+
+# Combine all inputs into a DataFrame
+# Ensure the order of columns matches the training data
+input_data = pd.DataFrame({
+    'Time': [time],
+    'Amount': [amount],
+    **{f'V{i}': [v_features[f'V{i}']] for i in range(1, 29) if f'V{i}' in v_features}
+})
+
+# Reorder columns to match the model's expected input order (X_train_scaled.columns)
+# This is critical. We'll derive this from the model's feature_names_in_ attribute.
+expected_columns = model.feature_names_in_ if hasattr(model, 'feature_names_in_') else None
+
+if expected_columns is None:
+    st.error("Could not determine expected feature order from the model. Make sure your model was trained with scikit-learn compatible feature names.")
+    st.stop()
+
+# Filter input_data to only include expected columns and reorder them
+# Handle missing columns by adding them with default (e.g., 0) if necessary
+processed_input = pd.DataFrame(columns=expected_columns)
+for col in expected_columns:
+    if col in input_data.columns:
+        processed_input[col] = input_data[col]
+    else:
+        processed_input[col] = 0.0 # Fill missing V-features with 0 or a sensible default
+
+
+# Apply the same scaling as during training (only to 'Time' and 'Amount')
+processed_input_scaled = processed_input.copy()
+processed_input_scaled[['Time', 'Amount']] = scaler.transform(processed_input[['Time', 'Amount']])
+
+
+if st.button('Predict'):
+    prediction = model.predict(processed_input_scaled)[0]
+    prediction_proba = model.predict_proba(processed_input_scaled)[:, 1][0]
+
+    st.subheader('Prediction Result:')
+    if prediction == 1:
+        st.error(f"Fraudulent Transaction Detected! (Probability: {prediction_proba:.4f})")
+    else:
+        st.success(f"Legitimate Transaction (Probability: {prediction_proba:.4f})")
+
+    st.write(f"Full input data used for prediction:")
+    st.dataframe(processed_input_scaled)
+
+# --- Save the Streamlit app content to a file --- #
+streamlit_app_content = st.session_state.get('streamlit_app_content', '') # Get content if already exists
+with open('streamlit_app.py', 'w') as f:
+    f.write(f'''
+import streamlit as st
+import joblib
+import pandas as pd
+import numpy as np
+
+MODEL_PATH = '{MODEL_PATH}'
+SCALER_PATH = '{SCALER_PATH}'
+
+@st.cache_resource
+def load_model_and_scaler():
     try:
-        image = Image.open(io.BytesIO(image_bytes)).convert('RGB')
-    except Exception as exc:
-        st.error(f'Invalid image: {exc}')
-        return
+        model = joblib.load(MODEL_PATH)
+        scaler = joblib.load(SCALER_PATH)
+        return model, scaler
+    except FileNotFoundError as e:
+        st.error(f"Error loading model or scaler: {{e}}. Please ensure '{{MODEL_PATH}}' and '{{SCALER_PATH}}' are in the correct directory.")
+        st.stop()
 
-    st.image(image, caption='Uploaded image', use_column_width=True)
+model, scaler = load_model_and_scaler()
 
-    if st.button('Classify image'):
-        with st.spinner('Running prediction...'):
-            x = preprocess_imagefile(image_bytes, img_size)
-            preds = model.predict(x)
-            results = top_k_predictions(preds, class_names, top_k)
+st.title('Fraud Detection App')
+st.write('Enter transaction details to predict if it is fraudulent or not.')
 
-        st.success('Prediction complete')
-        for item in results:
-            st.write(f"**{item['label']}** — {item['score']:.4f}")
+st.sidebar.header('Transaction Features')
 
-        if len(results) == 0:
-            st.warning('Model produced no predictions.')
+time = st.sidebar.number_input('Time (seconds since first transaction)', min_value=0.0, value=10000.0, step=1.0)
+amount = st.sidebar.number_input('Amount', min_value=0.0, value=50.0, step=0.01)
+
+st.sidebar.subheader('V-Features (Sample)')
+v_features = {{}}
+for i in range(1, 29):
+    if f'V{{i}}' in model.feature_names_in_:
+        v_features[f'V{{i}}'] = st.sidebar.slider(f'V{{i}}', min_value=-50.0, max_value=50.0, value=0.0, step=0.1)
+
+input_data = pd.DataFrame({{
+    'Time': [time],
+    'Amount': [amount],
+    **{{f'V{{i}}': [v_features[f'V{{i}}']] for i in range(1, 29) if f'V{{i}}' in v_features}}
+}})
+
+expected_columns = model.feature_names_in_ if hasattr(model, 'feature_names_in_') else None
+
+if expected_columns is None:
+    st.error("Could not determine expected feature order from the model. Make sure your model was trained with scikit-learn compatible feature names.")
+    st.stop()
+
+processed_input = pd.DataFrame(columns=expected_columns)
+for col in expected_columns:
+    if col in input_data.columns:
+        processed_input[col] = input_data[col]
+    else:
+        processed_input[col] = 0.0
+
+processed_input_scaled = processed_input.copy()
+processed_input_scaled[['Time', 'Amount']] = scaler.transform(processed_input[['Time', 'Amount']])
+
+
+if st.button('Predict'):
+    prediction = model.predict(processed_input_scaled)[0]
+    prediction_proba = model.predict_proba(processed_input_scaled)[:, 1][0]
+
+    st.subheader('Prediction Result:')
+    if prediction == 1:
+        st.error(f"Fraudulent Transaction Detected! (Probability: {{prediction_proba:.4f}})")
+    else:
+        st.success(f"Legitimate Transaction (Probability: {{prediction_proba:.4f}})")
+
+    st.write(f"Full input data used for prediction:")
+    st.dataframe(processed_input_scaled)
+''')
+
+st.success("Streamlit app content written to `streamlit_app.py`")
 
 
 if __name__ == '__main__':
