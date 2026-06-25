@@ -2,7 +2,6 @@
 from flask import Flask, request, jsonify
 import joblib
 import pandas as pd
-from sklearn.preprocessing import StandardScaler # For preprocessing
 
 app = Flask(__name__)
 
@@ -22,16 +21,8 @@ model = joblib.load('final_model.joblib')
 
 # Replace this with the actual loaded scaler from your workflow
 # For the context of this Colab, we'll make the scaler global to match the existing notebook
-global_scaler = None
-
-@app.before_first_request
-def load_global_scaler():
-    global global_scaler
-    # This part should be replaced by loading your *saved* scaler, e.g., joblib.load('scaler.joblib')
-    # For this demo, we are using the scaler object generated in the cell above.
-    # In a real scenario, the scaler would be saved after fitting and loaded here.
-    global_scaler = joblib.load('scaler_for_api.joblib') # Assuming you saved it
-    print("Scaler loaded successfully within Flask app!")
+global_scaler = joblib.load('scaler_for_api.joblib')
+print("Scaler loaded successfully within Flask app!")
 
 @app.route('/predict', methods=['POST'])
 def predict():

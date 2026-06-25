@@ -61,6 +61,110 @@ gunicorn --bind 0.0.0.0:5000 app:app
 
 The API will be accessible on port `5000` of the host it's running on (e.g., `http://your-server-ip:5000`).
 
+### Quick Demo File (3 Samples)
+
+A ready-to-run demo file is included to test the saved model and scaler directly (without starting Flask first):
+
+- `demo_model_samples.py`
+
+It contains 3 sample transactions and runs inference using:
+
+- `final_model.joblib`
+- `scaler_for_api.joblib`
+
+Run the demo:
+
+```bash
+source .venv/bin/activate
+python demo_model_samples.py
+```
+
+Observed output from this repository:
+
+```text
+Loaded artifacts successfully
+Model: XGBClassifier
+Features expected: 30
+----------------------------------------------------------------------
+sample_1_non_fraud: prediction=0 (Non-Fraud), fraud_probability=0.000006
+sample_2_non_fraud: prediction=0 (Non-Fraud), fraud_probability=0.000303
+sample_3_fraud: prediction=0 (Non-Fraud), fraud_probability=0.077948
+```
+
+### Deploy and Run
+
+Run the Streamlit app:
+
+```bash
+source .venv/bin/activate
+streamlit run streamlit_app.py --server.port 8510
+```
+
+Run the Flask API with Gunicorn:
+
+```bash
+source .venv/bin/activate
+gunicorn --bind 0.0.0.0:5000 app:app
+```
+
+### API Demo JSON for curl and Postman
+
+A dedicated JSON file with 3 ready samples is available at:
+
+- `demo_api_samples.json`
+
+Start the Flask API first:
+
+```bash
+source .venv/bin/activate
+python app.py
+```
+
+Test sample 1 with curl:
+
+```bash
+curl -X POST http://127.0.0.1:5000/predict \
+  -H "Content-Type: application/json" \
+  -d @<(jq '.sample_1_non_fraud' demo_api_samples.json)
+```
+
+Test sample 2 with curl:
+
+```bash
+curl -X POST http://127.0.0.1:5000/predict \
+  -H "Content-Type: application/json" \
+  -d @<(jq '.sample_2_non_fraud' demo_api_samples.json)
+```
+
+Test sample 3 with curl:
+
+```bash
+curl -X POST http://127.0.0.1:5000/predict \
+  -H "Content-Type: application/json" \
+  -d @<(jq '.sample_3_fraud' demo_api_samples.json)
+```
+
+Postman steps:
+
+1. Method: POST
+2. URL: http://127.0.0.1:5000/predict
+3. Header: Content-Type = application/json
+4. Body -> raw -> JSON
+5. Copy any one object from `demo_api_samples.json` (for example `sample_1_non_fraud`) and send.
+
+Run all 3 API samples in one command and print a summary table:
+
+```bash
+source .venv/bin/activate
+python run_api_demo_samples.py
+```
+
+Optional custom endpoint:
+
+```bash
+python run_api_demo_samples.py --url http://127.0.0.1:5000/predict
+```
+
 ### 6. Testing the API
 
 Once the API is running, you can send POST requests to the `/predict` endpoint. The request body should be a JSON object containing the 30 features of a transaction (`Time`, `V1` through `V28`, and `Amount`).
