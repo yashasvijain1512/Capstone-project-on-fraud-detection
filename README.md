@@ -73,7 +73,7 @@ This same rule is used for:
 
 2. **Install dependencies**:
    ```bash
-   pip install Flask gunicorn pandas scikit-learn xgboost joblib
+  pip install -r requirements.txt
    ```
 
 ## Running the API
