@@ -1,0 +1,13 @@
+.git
+.gitignore
+.venv
+.vscode
+.devcontainer
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.ipynb
+*.sqlite
+monitoring.db
+my-flask-app

@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fraud-api
+    command: gunicorn --bind 0.0.0.0:5000 app:app
+    ports:
+      - "5000:5000"
+    environment:
+      MODEL_PATH: final_model.joblib
+      SCALER_PATH: scaler_for_api.joblib
+      MONITORING_DB_PATH: /app/data/monitoring.db
+    volumes:
+      - monitoring_data:/app/data
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fraud-dashboard
+    command: streamlit run streamlit_app.py --server.address=0.0.0.0 --server.port=8501
+    ports:
+      - "8501:8501"
+    environment:
+      API_BASE_URL: http://api:5000
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  monitoring_data:

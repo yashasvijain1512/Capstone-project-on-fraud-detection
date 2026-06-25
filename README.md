@@ -7,6 +7,8 @@ A production-ready API for detecting fraudulent credit card transactions using a
 This project provides a fraud detection pipeline that:
 - Predicts fraud probability for credit card transactions
 - Exposes predictions through a REST API (`/predict`)
+- Stores request telemetry (prediction, probability, latency, errors) in SQLite for observability
+- Exposes monitoring APIs for live metrics and event feeds
 - Uses an optimized XGBoost classifier trained on imbalanced transaction data
 - Scales transaction features (`Time`, `Amount`) using StandardScaler
 
@@ -38,6 +40,20 @@ This project provides a fraud detection pipeline that:
 - **Input**: JSON object with 30 features (Time, V1-V28, Amount)
 - **Output**: JSON object with `prediction` (0 or 1) and `fraud_probability` (0.0-1.0)
 
+## Monitoring Endpoints
+
+**GET `/monitoring/summary`**
+- Query params:
+  - `window_minutes` (default `15`)
+  - `alert_threshold` (default `0.8`)
+- Returns aggregate metrics for the selected time window, including request volume, fraud count, alert count, errors, average fraud probability, and average latency.
+
+**GET `/monitoring/events`**
+- Query params:
+  - `limit` (default `100`, max `500`)
+  - `alert_threshold` (default `0.8`)
+- Returns recent prediction events with alert flags, status, latency, and error details.
+
 ## Installation
 
 **Requirements**: Python 3.8+
@@ -58,10 +74,47 @@ python app.py
 ```
 API accessible at `http://127.0.0.1:5000`
 
+### Streamlit Dashboard (Prediction + Real-Time Monitoring)
+```bash
+streamlit run streamlit_app.py
+```
+
+The Streamlit app now includes:
+- Manual prediction interface
+- Live monitoring metrics (requests, fraud flags, alerts, errors)
+- Recent alerts table
+- Recent event feed with latency and error tracking
+- Configurable alert threshold and auto-refresh
+
 **Production** (Using Gunicorn):
 ```bash
 gunicorn --bind 0.0.0.0:5000 app:app
 ```
+
+## Docker Deployment
+
+### Build and Run Both Services (API + Dashboard)
+```bash
+docker compose up --build
+```
+
+### Access Services
+- API: `http://127.0.0.1:5000`
+- Streamlit Dashboard: `http://127.0.0.1:8501`
+
+### Run in Detached Mode
+```bash
+docker compose up --build -d
+```
+
+### Stop Services
+```bash
+docker compose down
+```
+
+### Persistent Monitoring Data
+- Monitoring events are stored in a Docker volume (`monitoring_data`) at `/app/data/monitoring.db`.
+- This allows telemetry to persist across container restarts.
 
 ## Testing the API
 
