@@ -168,6 +168,4 @@ if st.button('Predict'):
 
 st.success("Streamlit app content written to `streamlit_app.py`")
 
-
-if __name__ == '__main__':
-    main()
+    
