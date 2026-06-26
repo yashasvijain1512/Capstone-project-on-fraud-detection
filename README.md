@@ -83,6 +83,20 @@ This same rule is used for:
 
 ## Running the API
 
+### Quick Start (Recommended)
+
+Run both services (API + Streamlit) together with one command:
+
+```bash
+./run_services.sh
+```
+
+This starts:
+- API on port `5000`
+- Streamlit on port `8501`
+
+Stop both with `Ctrl+C` in the same terminal.
+
 **Development** (Local testing):
 ```bash
 python app.py
@@ -195,6 +209,16 @@ docker compose up --build
 ### Access Services
 - API: `http://127.0.0.1:5000`
 - Streamlit Dashboard: `http://127.0.0.1:8501`
+
+If you are using VS Code Remote / Codespaces / Dev Containers:
+- open the **Ports** panel and ensure ports `5000` and `8501` are forwarded
+- use the forwarded URL shown in the Ports panel (instead of `127.0.0.1`) when opening in an external browser
+
+Quick health checks:
+```bash
+curl http://127.0.0.1:5000/monitoring/summary
+curl -I http://127.0.0.1:8501
+```
 
 ### Run in Detached Mode
 ```bash

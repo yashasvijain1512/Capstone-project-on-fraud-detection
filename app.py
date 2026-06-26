@@ -14,6 +14,40 @@ DEFAULT_ALERT_THRESHOLD = 0.8
 MODEL_PATH = os.getenv("MODEL_PATH", "final_model.joblib")
 SCALER_PATH = os.getenv("SCALER_PATH", "scaler_for_api.joblib")
 
+
+@app.route('/', methods=['GET'])
+def index():
+    return jsonify(
+        {
+            "service": "credit-card-fraud-detection-api",
+            "status": "ok",
+            "message": "API is running. Use POST /predict for predictions.",
+            "endpoints": {
+                "predict": {
+                    "method": "POST",
+                    "path": "/predict",
+                },
+                "monitoring_summary": {
+                    "method": "GET",
+                    "path": "/monitoring/summary",
+                },
+                "monitoring_events": {
+                    "method": "GET",
+                    "path": "/monitoring/events",
+                },
+                "health": {
+                    "method": "GET",
+                    "path": "/health",
+                },
+            },
+        }
+    )
+
+
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({"status": "healthy"})
+
 # Load the trained model
 model = joblib.load(MODEL_PATH)
 
