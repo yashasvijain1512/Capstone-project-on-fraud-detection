@@ -43,9 +43,24 @@ def load_artifacts():
         st.error("Missing scaler_for_api.joblib in project root.")
         st.stop()
 
-    models = {name: joblib.load(path) for name, path in MODEL_PATHS.items()}
+    models = {}
+    load_errors = {}
+
+    for name, path in MODEL_PATHS.items():
+        try:
+            models[name] = joblib.load(path)
+        except ModuleNotFoundError as exc:
+            load_errors[name] = f"Missing dependency: {exc.name}"
+        except Exception as exc:
+            load_errors[name] = str(exc)
+
+    if not models:
+        details = "; ".join(f"{name}: {error}" for name, error in load_errors.items())
+        st.error(f"Unable to load any comparison models. {details}")
+        st.stop()
+
     scaler = joblib.load(SCALER_PATH)
-    return models, scaler
+    return models, scaler, load_errors
 
 
 def get_expected_columns(models: Dict[str, object]):
@@ -155,8 +170,12 @@ def render_model_comparison_page(show_title=True):
             "for Logistic Regression, Neural Network, and XGBoost."
         )
 
-    models, scaler = load_artifacts()
+    models, scaler, load_errors = load_artifacts()
     expected_columns = get_expected_columns(models)
+
+    if load_errors:
+        skipped_models = ", ".join(f"{name} ({error})" for name, error in load_errors.items())
+        st.warning(f"Some models were skipped: {skipped_models}")
 
     st.sidebar.header("Model Comparison Data")
     default_dataset_candidates = [

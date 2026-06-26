@@ -13,6 +13,13 @@ from Dashboard.model_comparison_page import render_model_comparison_page
 MODEL_PATH = "final_model.joblib"
 SCALER_PATH = "scaler_for_api.joblib"
 DEFAULT_API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:5000")
+VIEW_MODES = ["Prediction Input", "Monitoring & Alerts", "Model Comparison"]
+VIEW_MODE_QUERY_MAP = {
+    "prediction": "Prediction Input",
+    "monitoring": "Monitoring & Alerts",
+    "comparison": "Model Comparison",
+}
+VIEW_MODE_QUERY_REVERSE_MAP = {value: key for key, value in VIEW_MODE_QUERY_MAP.items()}
 
 st.set_page_config(page_title="Credit Card Fraud Detection", layout="wide")
 
@@ -90,16 +97,32 @@ def fetch_monitoring_events(api_base_url, limit, alert_threshold):
     return fetch_json(url)
 
 
+def get_initial_view_mode():
+    view_param = st.query_params.get("view", "prediction")
+    return VIEW_MODE_QUERY_MAP.get(view_param, VIEW_MODES[0])
+
+
+def sync_view_mode_query_param():
+    st.query_params["view"] = VIEW_MODE_QUERY_REVERSE_MAP[st.session_state["view_mode"]]
+
+
 model, scaler = load_model_and_scaler()
 expected_columns = get_expected_columns(model)
+
+if "view_mode" not in st.session_state:
+    st.session_state["view_mode"] = get_initial_view_mode()
+
+if st.session_state["view_mode"] not in VIEW_MODES:
+    st.session_state["view_mode"] = VIEW_MODES[0]
 
 st.title("Credit Card Fraud Detection")
 st.caption("Model: final_model.joblib (Tuned XGBoost) | Preprocessing: scale Time and Amount")
 
 view_mode = st.sidebar.radio(
     "Dashboard Section",
-    ["Prediction Input", "Monitoring & Alerts", "Model Comparison"],
-    index=0,
+    VIEW_MODES,
+    key="view_mode",
+    on_change=sync_view_mode_query_param,
 )
 
 if view_mode == "Prediction Input":
