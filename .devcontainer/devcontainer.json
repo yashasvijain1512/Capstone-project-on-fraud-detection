@@ -19,15 +19,20 @@
   },
   "updateContentCommand": "[ -f packages.txt ] && sudo apt update && sudo apt upgrade -y && sudo xargs apt install -y <packages.txt; [ -f requirements.txt ] && pip3 install --user -r requirements.txt; pip3 install --user streamlit; echo '✅ Packages installed and Requirements met'",
   "postAttachCommand": {
-    "server": "streamlit run streamlit_app.py --server.enableCORS false --server.enableXsrfProtection false"
+    "server": "bash -lc 'cd /workspaces/Capstone-project-on-fraud-detection && chmod +x watchdog_services.sh && if ! pgrep -f \"watchdog_services.sh\" >/dev/null; then nohup env API_PORT=5000 STREAMLIT_PORT=8501 API_BASE_URL=http://127.0.0.1:5000 WATCHDOG_INTERVAL=5 ./watchdog_services.sh >/workspaces/Capstone-project-on-fraud-detection/watchdog.log 2>&1 & fi'"
   },
   "portsAttributes": {
+    "5000": {
+      "label": "Fraud API",
+      "onAutoForward": "notify"
+    },
     "8501": {
-      "label": "Application",
+      "label": "Streamlit Dashboard",
       "onAutoForward": "openPreview"
     }
   },
   "forwardPorts": [
+    5000,
     8501
   ]
 }

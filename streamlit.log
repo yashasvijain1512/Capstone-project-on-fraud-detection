@@ -9,3 +9,34 @@ Collecting usage statistics. To deactivate, set browser.gatherUsageStats to fals
   Network URL: http://10.0.1.131:8501
   External URL: http://4.240.18.225:8501
 
+
+Collecting usage statistics. To deactivate, set browser.gatherUsageStats to false.
+
+2026-06-27 10:40:01.426 Uvicorn server started on 0.0.0.0:8501
+
+  You can now view your Streamlit app in your browser.
+
+  Local URL: http://localhost:8501
+  Network URL: http://10.0.1.131:8501
+  External URL: http://4.240.18.225:8501
+
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1782556862.281195   43550 cudart_stub.cc:31] Could not find cuda drivers on your machine, GPU will not be used.
+I0000 00:00:1782556864.231739   43550 cpu_feature_guard.cc:227] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1782556869.106345   43550 cudart_stub.cc:31] Could not find cuda drivers on your machine, GPU will not be used.
+E0000 00:00:1782556870.959893   43550 cuda_platform.cc:52] failed call to cuInit: INTERNAL: CUDA error: Failed call to cuInit: UNKNOWN ERROR (303)
+/workspaces/Capstone-project-on-fraud-detection/.venv/lib/python3.11/site-packages/keras/src/saving/saving_lib.py:843: UserWarning: Skipping variable loading for optimizer 'adam', because it has 18 variables whereas the saved optimizer has 2 variables. 
+  saveable.load_own_variables(weights_store.get(inner_path))
+[1m   1/1875[0m [37m━━━━━━━━━━━━━━━━━━━━[0m [1m12:09[0m 389ms/step[1m  74/1875[0m [37m━━━━━━━━━━━━━━━━━━━━[0m [1m1s[0m 687us/step   [1m 138/1875[0m [32m━[0m[37m━━━━━━━━━━━━━━━━━━━[0m [1m1s[0m 734us/step[1m 203/1875[0m [32m━━[0m[37m━━━━━━━━━━━━━━━━━━[0m [1m1s[0m 749us/step[1m 261/1875[0m [32m━━[0m[37m━━━━━━━━━━━━━━━━━━[0m [1m1s[0m 776us/step[1m 326/1875[0m [32m━━━[0m[37m━━━━━━━━━━━━━━━━━[0m [1m1s[0m 776us/step[1m 375/1875[0m [32m━━━━[0m[37m━━━━━━━━━━━━━━━━[0m [1m1s[0m 811us/step[1m 420/1875[0m [32m━━━━[0m[37m━━━━━━━━━━━━━━━━[0m [1m1s[0m 843us/step[1m 461/1875[0m [32m━━━━[0m[37m━━━━━━━━━━━━━━━━[0m [1m1s[0m 878us/step[1m 487/1875[0m [32m━━━━━[0m[37m━━━━━━━━━━━━━━━[0m [1m1s[0m 939us/step[1m 498/1875[0m [32m━━━━━[0m[37m━━━━━━━━━━━━━━━[0m [1m1s[0m 1ms/step  [1m 515/1875[0m [32m━━━━━[0m[37m━━━━━━━━━━━━━━━[0m [1m1s[0m 1ms/step[1m 537/1875[0m [32m━━━━━[0m[37m━━━━━━━━━━━━━━━[0m [1m1s[0m 1ms/step[1m 559/1875[0m [32m━━━━━[0m[37m━━━━━━━━━━━━━━━[0m [1m1s[0m 1ms/step[1m 606/1875[0m [32m━━━━━━[0m[37m━━━━━━━━━━━━━━[0m [1m1s[0m 1ms/step[1m 657/1875[0m [32m━━━━━━━[0m[37m━━━━━━━━━━━━━[0m [1m1s[0m 1ms/step[1m 716/1875[0m [32m━━━━━━━[0m[37m━━━━━━━━━━━━━[0m [1m1s[0m 1ms/step[1m 783/1875[0m [32m━━━━━━━━[0m[37m━━━━━━━━━━━━[0m [1m1s[0m 1ms/step[1m 841/1875[0m [32m━━━━━━━━[0m[37m━━━━━━━━━━━━[0m [1m1s[0m 1ms/step[1m 902/1875[0m [32m━━━━━━━━━[0m[37m━━━━━━━━━━━[0m [1m1s[0m 1ms/step[1m 948/1875[0m [32m━━━━━━━━━━[0m[37m━━━━━━━━━━[0m [1m0s[0m 1ms/step[1m1013/1875[0m [32m━━━━━━━━━━[0m[37m━━━━━━━━━━[0m [1m0s[0m 1ms/step[1m1082/1875[0m [32m━━━━━━━━━━━[0m[37m━━━━━━━━━[0m [1m0s[0m 1ms/step[1m1142/1875[0m [32m━━━━━━━━━━━━[0m[37m━━━━━━━━[0m [1m0s[0m 1ms/step[1m1206/1875[0m [32m━━━━━━━━━━━━[0m[37m━━━━━━━━[0m [1m0s[0m 1ms/step[1m1279/1875[0m [32m━━━━━━━━━━━━━[0m[37m━━━━━━━[0m [1m0s[0m 997us/step[1m1346/1875[0m [32m━━━━━━━━━━━━━━[0m[37m━━━━━━[0m [1m0s[0m 985us/step[1m1411/1875[0m [32m━━━━━━━━━━━━━━━[0m[37m━━━━━[0m [1m0s[0m 976us/step[1m1474/1875[0m [32m━━━━━━━━━━━━━━━[0m[37m━━━━━[0m [1m0s[0m 968us/step[1m1527/1875[0m [32m━━━━━━━━━━━━━━━━[0m[37m━━━━[0m [1m0s[0m 968us/step[1m1584/1875[0m [32m━━━━━━━━━━━━━━━━[0m[37m━━━━[0m [1m0s[0m 965us/step[1m1616/1875[0m [32m━━━━━━━━━━━━━━━━━[0m[37m━━━[0m [1m0s[0m 978us/step[1m1649/1875[0m [32m━━━━━━━━━━━━━━━━━[0m[37m━━━[0m [1m0s[0m 990us/step[1m1698/1875[0m [32m━━━━━━━━━━━━━━━━━━[0m[37m━━[0m [1m0s[0m 991us/step[1m1757/1875[0m [32m━━━━━━━━━━━━━━━━━━[0m[37m━━[0m [1m0s[0m 986us/step[1m1803/1875[0m [32m━━━━━━━━━━━━━━━━━━━[0m[37m━[0m [1m0s[0m 989us/step[1m1865/1875[0m [32m━━━━━━━━━━━━━━━━━━━[0m[37m━[0m [1m0s[0m 983us/step[1m1875/1875[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m2s[0m 988us/step
+2026-06-27 10:41:20.830 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2026-06-27 10:41:24.536 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
