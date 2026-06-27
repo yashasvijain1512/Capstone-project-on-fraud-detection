@@ -1,0 +1,16 @@
+/workspaces/Capstone-project-on-fraud-detection/.venv/lib/python3.11/site-packages/sklearn/base.py:525: InconsistentVersionWarning: Trying to unpickle estimator StandardScaler from version 1.6.1 when using version 1.9.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+Scaler loaded successfully within Flask app!
+ * Serving Flask app 'app'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.0.1.131:5000
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [27/Jun/2026 09:02:24] "GET /monitoring/summary HTTP/1.1" 200 -
+127.0.0.1 - - [27/Jun/2026 09:02:24] "GET /monitoring/summary HTTP/1.1" 200 -
+127.0.0.1 - - [27/Jun/2026 09:02:31] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [27/Jun/2026 09:04:23] "GET /monitoring/summary?window_minutes=15&alert_threshold=0.8 HTTP/1.1" 200 -
+127.0.0.1 - - [27/Jun/2026 09:04:23] "GET /monitoring/events?limit=50&alert_threshold=0.8 HTTP/1.1" 200 -
