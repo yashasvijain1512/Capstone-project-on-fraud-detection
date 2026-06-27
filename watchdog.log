@@ -1,0 +1,9 @@
+nohup: ignoring input
+[watchdog] Logs:
+[watchdog]   API       -> /workspaces/Capstone-project-on-fraud-detection/api.log
+[watchdog]   Streamlit -> /workspaces/Capstone-project-on-fraud-detection/streamlit.log
+[watchdog] Check interval: 5s
+[watchdog] Starting API on 0.0.0.0:5000
+[watchdog] API ready (pid=11076)
+[watchdog] Starting Streamlit on 0.0.0.0:8501
+[watchdog] Streamlit started (pid=11202)
