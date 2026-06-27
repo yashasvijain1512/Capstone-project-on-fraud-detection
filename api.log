@@ -14,3 +14,7 @@ Scaler loaded successfully within Flask app!
 127.0.0.1 - - [27/Jun/2026 09:02:31] "GET / HTTP/1.1" 200 -
 127.0.0.1 - - [27/Jun/2026 09:04:23] "GET /monitoring/summary?window_minutes=15&alert_threshold=0.8 HTTP/1.1" 200 -
 127.0.0.1 - - [27/Jun/2026 09:04:23] "GET /monitoring/events?limit=50&alert_threshold=0.8 HTTP/1.1" 200 -
+127.0.0.1 - - [27/Jun/2026 09:12:58] "POST /predict HTTP/1.1" 200 -
+127.0.0.1 - - [27/Jun/2026 09:12:58] "POST /predict HTTP/1.1" 200 -
+127.0.0.1 - - [27/Jun/2026 09:12:59] "POST /predict HTTP/1.1" 200 -
+127.0.0.1 - - [27/Jun/2026 09:18:22] "GET / HTTP/1.1" 200 -
