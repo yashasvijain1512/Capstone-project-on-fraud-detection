@@ -97,6 +97,32 @@ This starts:
 
 Stop both with `Ctrl+C` in the same terminal.
 
+### Keep Services Alive (Watchdog)
+
+If API or Streamlit sometimes stop in long-running sessions, use the watchdog launcher:
+
+```bash
+chmod +x watchdog_services.sh
+./watchdog_services.sh
+```
+
+What it does:
+- Starts API and Streamlit
+- Checks both processes every 5 seconds
+- Restarts a service automatically if it exits
+- Writes logs to `api.log` and `streamlit.log`
+
+Optional environment variables:
+- `WATCHDOG_INTERVAL` (default `5`)
+- `API_PORT` (default `5000`)
+- `STREAMLIT_PORT` (default `8501`)
+- `API_BASE_URL` (default `http://127.0.0.1:5000`)
+
+Example:
+```bash
+WATCHDOG_INTERVAL=3 API_PORT=5000 STREAMLIT_PORT=8501 ./watchdog_services.sh
+```
+
 **Development** (Local testing):
 ```bash
 python app.py
